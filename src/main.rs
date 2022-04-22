@@ -4,7 +4,8 @@ mod recipe;
 mod spec;
 
 use clap::Parser;
-use crate::spec::{FormulaSpec, StarterSpec};
+use crate::spec::{DoughSpec, StarterSpec};
+use crate::recipe::{Recipe, Formula};
 
 /// Create Bread recipes using JSON formulas
 #[derive(Parser, Debug)]
@@ -17,7 +18,7 @@ struct Args {
 
     /// YAML file containing starter build
     #[clap(short, long)]
-    starter_spec: String,
+    starter_spec: Option<String>,
 
     /// Target dough weight
     #[clap(short, long)]
@@ -35,24 +36,17 @@ fn main() {
     let args = Args::parse();
 
     let formula_file = File::open(args.formula).unwrap();
-    let formula: FormulaSpec = serde_yaml::from_reader(formula_file).unwrap();
+    let formula: DoughSpec = serde_yaml::from_reader(formula_file).unwrap();
 
-    let starter_file = File::open(args.starter_spec).unwrap();
-    let starter_spec: StarterSpec = serde_yaml::from_reader(starter_file).unwrap();
+    let starter_spec = match args.starter_spec {
+        Some(file) => {
+            let starter_file = File::open(file).unwrap();
+            let starter_spec: StarterSpec = serde_yaml::from_reader(starter_file).unwrap();
+            Some(starter_spec)
+        },
+        None => None
+    };
 
-    println!("{:#?}", formula);
-    println!("{:#?}", starter_spec);
+    let formula = Formula::new(formula, starter_spec);
 
-    // STEP 1: Need to build a Formula
-    let formula = formula.into_formula();
-
-    // API
-
-    // Parse JSON file
-
-    // Create Ingredients
-
-    // Add to Recipe
-
-    // Compute
 }
