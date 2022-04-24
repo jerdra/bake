@@ -56,19 +56,18 @@ impl Formula {
     }
 
     fn calculate_mixins(&self, total_flour: f32) -> Option<Vec<CalculatedIngredient>> {
-        if let Some(extras) = &self.extras {
-            Some(
+
+        self.extras.as_ref().map(|extras| {
                 extras
                     .iter()
                     .map(|(key, value)| CalculatedIngredient {
                         name: key.to_string(),
                         weight: total_flour * value,
                     })
-                    .collect(),
-            )
-        } else {
-            None
-        }
+                    .collect()
+        })
+
+
     }
 
     /// Convert a bread Formula into a bread Recipe
@@ -99,6 +98,8 @@ impl Formula {
     }
 
     fn calculate_flour(&self, total_flour: f32) -> Vec<CalculatedIngredient> {
+
+
         if let Some(starter) = &self.starter {
             unimplemented!()
         } else {
