@@ -1,8 +1,9 @@
-use crate::spec::{DoughSpec, StarterSpec};
+use crate::spec::{DoughSpec, StarterSpec, FlourMap};
 /// Compute bread formulas using a recipe
 /// and output the required ingredients weights
 use std::collections::HashMap;
 
+// For storing flour maps
 struct CalculatedIngredient {
     name: String,
     weight: f32,
@@ -10,16 +11,17 @@ struct CalculatedIngredient {
 
 struct Starter {
     amount: f32,
-    flour: HashMap<String, f32>,
+    flour: FlourMap,
     hydration: f32,
 }
+
 
 /// Full Dough recipe specification with or without a starter included
 pub struct Formula {
     name: String,
     hydration: f32,
     salt: f32,
-    flours: HashMap<String, f32>,
+    flours: FlourMap,
     extras: Option<HashMap<String, f32>>,
     description: Option<String>,
     starter: Option<Starter>,
