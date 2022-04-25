@@ -51,6 +51,8 @@ fn main() {
 
     let formula = Formula::new(formula, starter_spec);
     let recipe = formula.into_recipe(args.weight);
+    println!("{:#?}", recipe);
+
 
 
 }

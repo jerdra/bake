@@ -52,7 +52,9 @@ impl Formula {
 
     fn calculate_water(&self, total_flour: f32) -> f32 {
         match &self.starter {
-            Some(starter) => total_flour * (self.hydration - starter.hydration * starter.amount),
+            Some(starter) => {
+                total_flour * (self.hydration - (1.0 / (1.0 + starter.hydration)) * starter.amount)
+            }
             None => total_flour * self.hydration,
         }
     }
@@ -71,9 +73,18 @@ impl Formula {
 
     /// Convert a bread Formula into a bread Recipe
     pub fn into_recipe(self, weight: f32) -> Recipe {
-        
         // Need mixins here
-        let total_flour = weight / (1f32 + self.hydration + self.salt);
+        let total_flour = weight
+            / (1f32
+                + self.hydration
+                + self.salt
+                + self.extras.as_ref().map_or(0.0, |extras| {
+                    let mut result = 0.0;
+                    for value in extras.values() {
+                        result += value
+                    }
+                    result
+                }));
 
         let salt = CalculatedIngredient {
             name: "Salt".to_string(),
@@ -84,6 +95,7 @@ impl Formula {
             name: "Water".to_string(),
             weight: self.calculate_water(total_flour),
         };
+
         let mixins = self.calculate_mixins(total_flour);
         let flours = self.calculate_flour(total_flour);
 
@@ -99,7 +111,6 @@ impl Formula {
     }
 
     fn calculate_flour(&self, total_flour: f32) -> Vec<CalculatedIngredient> {
-
         // TODO: Simplify the shit outta this
         if let Some(starter) = &self.starter {
             let starter_amt = starter.amount * total_flour;
@@ -111,7 +122,7 @@ impl Formula {
                 .iter()
                 .map(|(flour, amt)| CalculatedIngredient {
                     name: flour.to_string(),
-                    weight: amt * total_flour,
+                    weight: *amt,
                 })
                 .collect()
         } else {
@@ -165,6 +176,7 @@ fn adjust_for_starter(
     }
 
     let mut vars_to_adjust: Vec<&String> = dough_flour.keys().collect();
+
     let mut found_negative;
     loop {
         found_negative = false;
@@ -191,5 +203,7 @@ fn adjust_for_starter(
         });
     }
 
+    // This gives final composition
+    // Not the amount that we need to add.... should be calculated separately
     FlourMap(final_dough_amts)
 }
