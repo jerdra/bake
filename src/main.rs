@@ -5,7 +5,7 @@ mod spec;
 
 use clap::Parser;
 use crate::spec::{DoughSpec, StarterSpec};
-use crate::recipe::{Recipe, Formula};
+use crate::recipe::Formula;
 
 /// Create Bread recipes using JSON formulas
 #[derive(Parser, Debug)]
@@ -37,16 +37,20 @@ fn main() {
 
     let formula_file = File::open(args.formula).unwrap();
     let formula: DoughSpec = serde_yaml::from_reader(formula_file).unwrap();
+    println!("{:#?}", formula);
 
     let starter_spec = match args.starter_spec {
         Some(file) => {
             let starter_file = File::open(file).unwrap();
             let starter_spec: StarterSpec = serde_yaml::from_reader(starter_file).unwrap();
+            println!("{:#?}", starter_spec);
             Some(starter_spec)
         },
         None => None
     };
 
     let formula = Formula::new(formula, starter_spec);
+    let recipe = formula.into_recipe(args.weight);
+
 
 }
