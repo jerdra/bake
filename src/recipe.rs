@@ -201,7 +201,7 @@ pub struct DoughComposition<'a> {
 
 impl Display for DoughComposition<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "Dough Composition:")?;
+        writeln!(f, "Final Dough Composition:")?;
         writeln!(f, "===========================")?;
 
         // Now for each flour, check if in starter
