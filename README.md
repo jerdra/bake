@@ -5,7 +5,9 @@ Bake
 **WARNING**: This repository is still very much in progress (missing features)
 
 - [ ] Allow yeast key to be used
-- [ ] Use a slightly different adjustment algorithm? (least squares solution vs. naive re-allocation?) Alteratively provide an option
+- [ ] Provide options for flour adjustment algorithms (least squares solution vs. naive re-allocation \[current\])
+- [ ] Write a test-suite
+- [ ] Panic if unexpected keys in YAMLs
 ------------
 
 Simple little CLI tool for converting Bread bakers formulas into full recipes using Rust!
