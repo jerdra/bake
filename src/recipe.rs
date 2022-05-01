@@ -68,7 +68,7 @@ pub struct Formula {
     hydration: f32,
     salt: f32,
     flours: FlourMap,
-    extras: Option<HashMap<String, f32>>,
+    mixins: Option<HashMap<String, f32>>,
     description: Option<String>,
     starter: Option<Starter>,
 }
@@ -91,7 +91,7 @@ impl Formula {
             hydration: dough_spec.hydration,
             salt: dough_spec.salt,
             description: dough_spec.description,
-            extras: dough_spec.extras,
+            mixins: dough_spec.mixins,
             starter,
         }
     }
@@ -106,8 +106,9 @@ impl Formula {
     }
 
     fn calculate_mixins(&self, total_flour: f32) -> Option<Vec<CalculatedIngredient>> {
-        self.extras.as_ref().map(|extras| {
-            extras
+
+        self.mixins.as_ref().map(|mixins| {
+            mixins
                 .iter()
                 .map(|(key, value)| CalculatedIngredient {
                     name: key.to_string(),
@@ -150,9 +151,9 @@ impl Formula {
             / (1f32
                 + self.hydration
                 + self.salt
-                + self.extras.as_ref().map_or(0.0, |extras| {
+                + self.mixins.as_ref().map_or(0.0, |mixins| {
                     let mut result = 0.0;
-                    for value in extras.values() {
+                    for value in mixins.values() {
                         result += value
                     }
                     result
@@ -223,6 +224,7 @@ impl Display for DoughComposition<'_> {
         }
 
         writeln!(f, "---------------------------")?;
+        writeln!(f)?;
 
         // Water, Salt
         let water_weight = self.water.weight + self.starter.as_ref().map_or(0.0, |starter| starter.water.weight);
@@ -237,6 +239,8 @@ impl Display for DoughComposition<'_> {
             self.salt.name,
             self.salt.weight / self.total_flour * 100.0
         )?;
+
+        writeln!(f)?;
 
         // Mix-ins
         self.mixins

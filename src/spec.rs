@@ -21,7 +21,7 @@ pub struct DoughSpec {
     pub salt: f32,
     pub description: Option<String>,
     pub starter: Option<f32>,
-    pub extras: Option<HashMap<String, f32>>,
+    pub mixins: Option<HashMap<String, f32>>,
 }
 
 /// Validation on dough specification
@@ -33,14 +33,14 @@ pub struct RawDoughSpec {
     pub salt: f32,
     pub description: Option<String>,
     pub starter: Option<f32>,
-    pub extras: Option<HashMap<String, f32>>,
+    pub mixins: Option<HashMap<String, f32>>,
 }
 
 impl TryFrom<RawDoughSpec> for DoughSpec {
     type Error = &'static str;
     fn try_from(value: RawDoughSpec) -> Result<Self, Self::Error> {
         let flour = make_percent(value.flour.0);
-        let extras = value.extras.map(make_percent);
+        let mixins = value.mixins.map(make_percent);
         let hydration = value.hydration / 100.0;
         let salt = value.salt / 100.0;
         let starter = value.starter.map(|starter| starter / 100.0);
@@ -52,7 +52,7 @@ impl TryFrom<RawDoughSpec> for DoughSpec {
             salt,
             description: value.description,
             starter,
-            extras,
+            mixins,
         })
     }
 }
