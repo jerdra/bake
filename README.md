@@ -68,7 +68,7 @@ Salt: 2.00
 
 ### Sourdough Recipes
 
-Sourdough recipes become complicated as they introduce additional flours into the final dough that is produced. `bake` will attempt to re-adjust flours in order to preserve the baker's intended dough formula while accoutning for any new flours introduced by the starter. This in accordance with the [BBGA Bakers Formula Guide](https://www.bbga.org/files/2009FormulaFormattingSINGLES.pdf). To introduce a Sourdough culture into your recipe, you'll need another YAML file describing your starter:
+Sourdough recipes become complicated as they introduce additional flours into the final dough that is produced. `bake` will attempt to re-adjust flours in order to preserve the baker's intended dough formula while accounting for any new flours introduced by the starter. This in accordance with the [BBGA Bakers Formula Guide](https://www.bbga.org/files/2009FormulaFormattingSINGLES.pdf). To introduce a Sourdough culture into your recipe, you'll need another YAML file describing your starter:
 
 `starter.yaml`
 ```
