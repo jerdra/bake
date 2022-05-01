@@ -1,22 +1,68 @@
 use crate::spec::{DoughSpec, FlourMap, StarterSpec};
-/// Compute bread formulas using a recipe
-/// and output the required ingredients weights
 use std::collections::HashMap;
+use std::fmt::Display;
 
-// For storing flour maps
 #[derive(Debug)]
 struct CalculatedIngredient {
     name: String,
     weight: f32,
 }
 
+impl Display for CalculatedIngredient {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}: {:.2}", self.name, self.weight)
+    }
+}
+
+#[derive(Debug)]
 struct Starter {
     amount: f32,
     flour: FlourMap,
     hydration: f32,
 }
 
+impl Starter {
+    pub fn percent_flour(&self) -> f32 {
+        1.0 - self.percent_water()
+    }
+
+    pub fn percent_water(&self) -> f32 {
+        1.0 / (1.0 + self.hydration)
+    }
+
+    pub fn into_calculated(self, total_flour: f32) -> CalculatedStarter {
+        let starter_amount = self.amount * total_flour;
+        let flours: Vec<CalculatedIngredient> = self
+            .flour
+            .iter()
+            .map(|(flour, amount)| CalculatedIngredient {
+                name: flour.to_string(),
+                weight: amount * self.percent_flour() * starter_amount,
+            })
+            .collect();
+        let water = CalculatedIngredient {
+            name: "Water".to_string(),
+            weight: starter_amount * self.percent_water(),
+        };
+
+        CalculatedStarter {
+            amount: starter_amount,
+            water,
+            flours,
+        }
+    }
+}
+
+/// Total amount of starter and flours for composition calculation
+#[derive(Debug)]
+struct CalculatedStarter {
+    amount: f32,
+    water: CalculatedIngredient,
+    flours: Vec<CalculatedIngredient>,
+}
+
 /// Full Dough recipe specification with or without a starter included
+#[derive(Debug)]
 pub struct Formula {
     name: String,
     hydration: f32,
@@ -53,7 +99,7 @@ impl Formula {
     fn calculate_water(&self, total_flour: f32) -> f32 {
         match &self.starter {
             Some(starter) => {
-                total_flour * (self.hydration - (1.0 / (1.0 + starter.hydration)) * starter.amount)
+                total_flour * (self.hydration - starter.percent_water() * starter.amount)
             }
             None => total_flour * self.hydration,
         }
@@ -69,6 +115,32 @@ impl Formula {
                 })
                 .collect()
         })
+    }
+
+    fn calculate_flour(&self, total_flour: f32) -> Vec<CalculatedIngredient> {
+        // TODO: Simplify the shit outta this
+        if let Some(starter) = &self.starter {
+            let starter_amt = starter.amount * total_flour;
+            let flour_amt = total_flour - starter_amt;
+
+            let adjusted_flour =
+                adjust_for_starter(flour_amt, &self.flours, starter_amt, &starter.flour);
+            adjusted_flour
+                .iter()
+                .map(|(flour, amt)| CalculatedIngredient {
+                    name: flour.to_string(),
+                    weight: *amt,
+                })
+                .collect()
+        } else {
+            self.flours
+                .iter()
+                .map(|(flour, amt)| CalculatedIngredient {
+                    name: flour.to_string(),
+                    weight: amt * total_flour,
+                })
+                .collect()
+        }
     }
 
     /// Convert a bread Formula into a bread Recipe
@@ -97,7 +169,12 @@ impl Formula {
         };
 
         let mixins = self.calculate_mixins(total_flour);
+
         let flours = self.calculate_flour(total_flour);
+
+        let starter = self
+            .starter
+            .map(|starter| starter.into_calculated(total_flour));
 
         Recipe {
             name: self.name,
@@ -106,34 +183,79 @@ impl Formula {
             mixins,
             water,
             salt,
+            starter,
             description: self.description,
         }
     }
+}
 
-    fn calculate_flour(&self, total_flour: f32) -> Vec<CalculatedIngredient> {
-        // TODO: Simplify the shit outta this
-        if let Some(starter) = &self.starter {
-            let starter_amt = starter.amount * total_flour;
-            let flour_amt = total_flour - starter_amt;
+/// Provides a composition view on a Recipe
+pub struct DoughComposition<'a> {
+    total_flour: f32,
+    flours: &'a Vec<CalculatedIngredient>,
+    water: &'a CalculatedIngredient,
+    salt: &'a CalculatedIngredient,
+    starter: &'a Option<CalculatedStarter>,
+    mixins: &'a Option<Vec<CalculatedIngredient>>,
+}
 
-            let adjusted_flour =
-                adjust_for_starter(flour_amt, &self.flours, starter_amt, &starter.flour);
-            adjusted_flour
-                .iter()
-                .map(|(flour, amt)| CalculatedIngredient {
-                    name: flour.to_string(),
-                    weight: *amt,
-                })
-                .collect()
-        } else {
-            self.flours
-                .iter()
-                .map(|(flour, amt)| CalculatedIngredient {
-                    name: flour.to_string(),
-                    weight: amt * total_flour,
-                })
-                .collect()
+impl Display for DoughComposition<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Dough Composition:")?;
+        writeln!(f, "===========================")?;
+
+        // Now for each flour, check if in starter
+        writeln!(f, "Flours: ")?;
+        writeln!(f, "---------------------------")?;
+        for flour in self.flours {
+            writeln!(f, "{}: {:.2}", flour.name, flour.weight / self.total_flour)?;
         }
+
+        if let Some(starter) = self.starter {
+            for flour in &starter.flours {
+                writeln!(
+                    f,
+                    "Prefermented {}: {:.2}",
+                    flour.name,
+                    flour.weight / self.total_flour * 100.0
+                )?;
+            }
+        }
+
+        writeln!(f, "---------------------------")?;
+
+        // Water, Salt
+        writeln!(
+            f,
+            "Hydration: {:.2}",
+            self.water.weight / self.total_flour * 100.0
+        )?;
+        writeln!(
+            f,
+            "{}: {:.2}",
+            self.salt.name,
+            self.salt.weight / self.total_flour * 100.0
+        )?;
+
+        // Mix-ins
+        self.mixins
+            .as_ref()
+            .map_or(std::fmt::Result::Ok(()), |mixins| {
+                writeln!(f, "Mixins:")?;
+                writeln!(f, "---------------------------")?;
+                for mixin in mixins {
+                    writeln!(
+                        f,
+                        "{}: {:.2}",
+                        mixin.name,
+                        mixin.weight / self.total_flour * 100.0
+                    )?;
+                }
+                writeln!(f, "---------------------------")?;
+                Ok(())
+            })?;
+
+        Ok(())
     }
 }
 
@@ -145,18 +267,90 @@ pub struct Recipe {
     mixins: Option<Vec<CalculatedIngredient>>,
     water: CalculatedIngredient,
     salt: CalculatedIngredient,
+    starter: Option<CalculatedStarter>,
     description: Option<String>,
 }
 
-impl Recipe {}
+impl Recipe {
+    pub fn view_composition(&self) -> DoughComposition {
+        let total_flour: f32 = self.flours.iter().map(|flour| flour.weight).sum::<f32>()
+            + self
+                .starter
+                .as_ref()
+                .map_or(0.0, |starter| starter.amount - starter.water.weight);
 
-/// Dough adjustment algorithm
-/// 1. Subtract out flours that only appear in Starter
-/// 2. With remaining amount, compute new proportions adjusted for starter contribution
-/// 3. If no negative amounts appear, we're done
-/// 4. If negative amounts appear, subtract amount from remaining amount
-/// 5. Set negative values to 0, and remove from consideration
-/// 6. Go to step 2.
+        DoughComposition {
+            total_flour,
+            flours: &self.flours,
+            mixins: &self.mixins,
+            water: &self.water,
+            salt: &self.salt,
+            starter: &self.starter,
+        }
+    }
+}
+
+impl Display for Recipe {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Dough Recipe")?;
+        writeln!(f, "============================")?;
+        self.description
+            .as_ref()
+            .map_or(std::fmt::Result::Ok(()), |description| {
+                writeln!(f, "{}", description)
+            })?;
+        writeln!(f, "============================")?;
+        writeln!(f)?;
+        writeln!(f, "{}", self.name)?;
+        writeln!(f, "Total Weight: {:.2}", self.total_weight)?;
+        writeln!(f)?;
+
+        writeln!(f, "Flours:")?;
+        writeln!(f, "----------------------------")?;
+        for ingredient in &self.flours {
+            writeln!(f, "{}", ingredient)?;
+        }
+        writeln!(f, "----------------------------")?;
+        writeln!(f)?;
+
+        writeln!(f, "{}", self.water)?;
+        writeln!(f, "{}", self.salt)?;
+        writeln!(f)?;
+
+        self.mixins
+            .as_ref()
+            .map_or(std::fmt::Result::Ok(()), |mixins| {
+                writeln!(f, "Mix-ins:")?;
+                writeln!(f, "----------------------------")?;
+                for ingredient in mixins {
+                    writeln!(f, "{}", ingredient)?;
+                }
+                writeln!(f, "----------------------------")?;
+                writeln!(f)?;
+                Ok(())
+            })?;
+
+        self.starter
+            .as_ref()
+            .map_or(std::fmt::Result::Ok(()), |starter| {
+                writeln!(f, "Starter:")?;
+                writeln!(f, "----------------------------")?;
+                writeln!(f, "Total Amount: {:.2}", starter.amount)?;
+                writeln!(f)?;
+                for ingredient in &starter.flours {
+                    writeln!(f, "\t{}", ingredient)?;
+                }
+                writeln!(f)?;
+                writeln!(f, "\t{}", starter.water)?;
+                writeln!(f, "----------------------------")?;
+                writeln!(f)?;
+                Ok(())
+            })?;
+
+        Ok(())
+    }
+}
+
 fn adjust_for_starter(
     dough_amt: f32,
     dough_flour: &FlourMap,
@@ -171,7 +365,6 @@ fn adjust_for_starter(
         if !dough_flour.contains_key(key) {
             let starter_amt = starter_flour.get(key).unwrap_or(&0.0) * starter_amt;
             amt_to_redistribute -= starter_amt;
-            final_dough_amts.insert(key.to_string(), starter_amt);
         }
     }
 
@@ -203,7 +396,6 @@ fn adjust_for_starter(
         });
     }
 
-    // This gives final composition
-    // Not the amount that we need to add.... should be calculated separately
+    // Amount of flour to add!
     FlourMap(final_dough_amts)
 }

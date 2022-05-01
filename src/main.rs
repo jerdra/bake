@@ -37,13 +37,11 @@ fn main() {
 
     let formula_file = File::open(args.formula).unwrap();
     let formula: DoughSpec = serde_yaml::from_reader(formula_file).unwrap();
-    println!("{:#?}", formula);
 
     let starter_spec = match args.starter_spec {
         Some(file) => {
             let starter_file = File::open(file).unwrap();
             let starter_spec: StarterSpec = serde_yaml::from_reader(starter_file).unwrap();
-            println!("{:#?}", starter_spec);
             Some(starter_spec)
         },
         None => None
@@ -51,7 +49,9 @@ fn main() {
 
     let formula = Formula::new(formula, starter_spec);
     let recipe = formula.into_recipe(args.weight);
-    println!("{:#?}", recipe);
+    println!("{}", recipe);
+    println!("{}", recipe.view_composition());
+
 
 
 
