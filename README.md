@@ -2,10 +2,10 @@ Bake
 ======
 
 ------------
-**WARNING**: This repository is still very much in progress (missing features, incomplete implementation of starter)
+**WARNING**: This repository is still very much in progress (missing features)
 
 - [ ] Allow yeast key to be used
-- [ ] Instead of starter use fermented flour amount? (BBGA standard)
+- [ ] Use a slightly different adjustment algorithm? (least squares solution vs. naive re-allocation?) Alteratively provide an option
 ------------
 
 Simple little CLI tool for converting Bread bakers formulas into full recipes using Rust!
