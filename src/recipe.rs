@@ -118,9 +118,9 @@ impl Formula {
     }
 
     fn calculate_flour(&self, total_flour: f32) -> Vec<CalculatedIngredient> {
-        // TODO: Simplify the shit outta this
+
         if let Some(starter) = &self.starter {
-            let starter_amt = starter.amount * total_flour;
+            let starter_amt = starter.amount * starter.percent_flour() * total_flour;
             let flour_amt = total_flour - starter_amt;
 
             let adjusted_flour =
@@ -225,10 +225,11 @@ impl Display for DoughComposition<'_> {
         writeln!(f, "---------------------------")?;
 
         // Water, Salt
+        let water_weight = self.water.weight + self.starter.as_ref().map_or(0.0, |starter| starter.water.weight);
         writeln!(
             f,
             "Hydration: {:.2}",
-            self.water.weight / self.total_flour * 100.0
+            water_weight / self.total_flour * 100.0
         )?;
         writeln!(
             f,
@@ -278,6 +279,7 @@ impl Recipe {
                 .starter
                 .as_ref()
                 .map_or(0.0, |starter| starter.amount - starter.water.weight);
+
 
         DoughComposition {
             total_flour,
@@ -368,6 +370,7 @@ fn adjust_for_starter(
         }
     }
 
+
     let mut vars_to_adjust: Vec<&String> = dough_flour.keys().collect();
 
     let mut found_negative;
@@ -395,7 +398,6 @@ fn adjust_for_starter(
             }
         });
     }
-
     // Amount of flour to add!
     FlourMap(final_dough_amts)
 }
