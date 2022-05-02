@@ -67,6 +67,7 @@ pub struct Formula {
     name: String,
     hydration: f32,
     salt: f32,
+    yeast: Option<f32>,
     flours: FlourMap,
     mixins: Option<HashMap<String, f32>>,
     description: Option<String>,
@@ -93,6 +94,7 @@ impl Formula {
             description: dough_spec.description,
             mixins: dough_spec.mixins,
             starter,
+            yeast: dough_spec.yeast,
         }
     }
 
@@ -106,7 +108,6 @@ impl Formula {
     }
 
     fn calculate_mixins(&self, total_flour: f32) -> Option<Vec<CalculatedIngredient>> {
-
         self.mixins.as_ref().map(|mixins| {
             mixins
                 .iter()
@@ -119,7 +120,6 @@ impl Formula {
     }
 
     fn calculate_flour(&self, total_flour: f32) -> Vec<CalculatedIngredient> {
-
         if let Some(starter) = &self.starter {
             let starter_amt = starter.amount * starter.percent_flour() * total_flour;
             let flour_amt = total_flour - starter_amt;
@@ -157,7 +157,8 @@ impl Formula {
                         result += value
                     }
                     result
-                }));
+                })
+                + self.yeast.map_or(0.0, |yeast| yeast));
 
         let salt = CalculatedIngredient {
             name: "Salt".to_string(),
@@ -168,6 +169,11 @@ impl Formula {
             name: "Water".to_string(),
             weight: self.calculate_water(total_flour),
         };
+
+        let yeast = self.yeast.map(|yeast| CalculatedIngredient {
+            name: "Yeast".to_string(),
+            weight: yeast * total_flour,
+        });
 
         let mixins = self.calculate_mixins(total_flour);
 
@@ -182,6 +188,7 @@ impl Formula {
             total_weight: weight,
             flours,
             mixins,
+            yeast,
             water,
             salt,
             starter,
@@ -195,6 +202,7 @@ pub struct DoughComposition<'a> {
     total_flour: f32,
     flours: &'a Vec<CalculatedIngredient>,
     water: &'a CalculatedIngredient,
+    yeast: &'a Option<CalculatedIngredient>,
     salt: &'a CalculatedIngredient,
     starter: &'a Option<CalculatedStarter>,
     mixins: &'a Option<Vec<CalculatedIngredient>>,
@@ -227,7 +235,11 @@ impl Display for DoughComposition<'_> {
         writeln!(f)?;
 
         // Water, Salt
-        let water_weight = self.water.weight + self.starter.as_ref().map_or(0.0, |starter| starter.water.weight);
+        let water_weight = self.water.weight
+            + self
+                .starter
+                .as_ref()
+                .map_or(0.0, |starter| starter.water.weight);
         writeln!(
             f,
             "Hydration: {:.2}",
@@ -239,6 +251,17 @@ impl Display for DoughComposition<'_> {
             self.salt.name,
             self.salt.weight / self.total_flour * 100.0
         )?;
+
+        self.yeast
+            .as_ref()
+            .map_or(std::fmt::Result::Ok(()), |yeast| {
+                writeln!(
+                    f,
+                    "{}: {:.2}",
+                    yeast.name,
+                    yeast.weight / self.total_flour * 100.0
+                )
+            })?;
 
         writeln!(f)?;
 
@@ -270,6 +293,7 @@ pub struct Recipe {
     total_weight: f32,
     flours: Vec<CalculatedIngredient>,
     mixins: Option<Vec<CalculatedIngredient>>,
+    yeast: Option<CalculatedIngredient>,
     water: CalculatedIngredient,
     salt: CalculatedIngredient,
     starter: Option<CalculatedStarter>,
@@ -284,12 +308,12 @@ impl Recipe {
                 .as_ref()
                 .map_or(0.0, |starter| starter.amount - starter.water.weight);
 
-
         DoughComposition {
             total_flour,
             flours: &self.flours,
             mixins: &self.mixins,
             water: &self.water,
+            yeast: &self.yeast,
             salt: &self.salt,
             starter: &self.starter,
         }
@@ -298,7 +322,7 @@ impl Recipe {
 
 impl Display for Recipe {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "Dough Recipe")?;
+        writeln!(f, "{}", self.name)?;
         writeln!(f, "============================")?;
         self.description
             .as_ref()
@@ -307,7 +331,6 @@ impl Display for Recipe {
             })?;
         writeln!(f, "============================")?;
         writeln!(f)?;
-        writeln!(f, "{}", self.name)?;
         writeln!(f, "Total Weight: {:.2}", self.total_weight)?;
         writeln!(f)?;
 
@@ -321,6 +344,9 @@ impl Display for Recipe {
 
         writeln!(f, "{}", self.water)?;
         writeln!(f, "{}", self.salt)?;
+        self.yeast
+            .as_ref()
+            .map_or(std::fmt::Result::Ok(()), |yeast| writeln!(f, "{}", yeast))?;
         writeln!(f)?;
 
         self.mixins
@@ -373,7 +399,6 @@ fn adjust_for_starter(
             amt_to_redistribute -= starter_amt;
         }
     }
-
 
     let mut vars_to_adjust: Vec<&String> = dough_flour.keys().collect();
 

@@ -27,6 +27,7 @@ flour:
 
 hydration: 80
 salt: 2
+yeast: 1
 ```
 
 With this `formula`, `bake` can convert this into a 1000g bread recipe using the following command:
@@ -38,22 +39,22 @@ bake --formula basic.yaml --weight 1000
 This outputs:
 
 ```
-Dough Recipe
+Basic Dough
 ============================
-This is a very basic 80% hydration, 5% whole wheat recipe
+Basic 80% hydration, 5% whole wheat recipe
 ============================
 
-Basic Dough
 Total Weight: 1000.00
 
 Flours:
 ----------------------------
-whole_wheat: 27.47
-white: 521.98
+whole_wheat: 27.32
+white: 519.13
 ----------------------------
 
-Water: 439.56
-Salt: 10.99
+Water: 437.16
+Salt: 10.93
+Yeast: 5.46
 
 
 Final Dough Composition:
@@ -66,6 +67,7 @@ white: 0.95
 
 Hydration: 80.00
 Salt: 2.00
+Yeast: 1.00
 ```
 
 ### Sourdough Recipes
@@ -87,7 +89,7 @@ Let's update our `basic.yaml` to reflect how much starter we want to add:
 
 `basic-with-starter.yaml`
 ```
-name: Basic Dough
+name: Basic Sourdough
 description: Basic 80% sourdough recipe
 
 flour:
@@ -107,12 +109,11 @@ bake --formula basic-with-starter.yaml --starter-spec starter.yaml --weight 1000
 
 Output:
 ```
-Dough Recipe
+Basic Sourdough
 ============================
 Basic 80% sourdough recipe
 ============================
 
-Basic Dough
 Total Weight: 1000.00
 
 Flours:
@@ -165,6 +166,7 @@ mixins:
 
 hydration: 80
 salt: 2
+yeast: 1
 
 description: |
   "Onion garlic bread"
@@ -173,27 +175,27 @@ description: |
 
 Output:
 ```
-Dough Recipe
+Onion garlic bread
 ============================
 "Onion garlic bread"
 
 ============================
 
-Onion garlic bread
 Total Weight: 1000.00
 
 Flours:
 ----------------------------
-white: 529.10
+white: 526.32
 ----------------------------
 
-Water: 423.28
-Salt: 10.58
+Water: 421.05
+Salt: 10.53
+Yeast: 5.26
 
 Mix-ins:
 ----------------------------
-onion: 26.46
-garlic: 10.58
+onion: 26.32
+garlic: 10.53
 ----------------------------
 
 
@@ -206,6 +208,7 @@ white: 1.00
 
 Hydration: 80.00
 Salt: 2.00
+Yeast: 1.00
 
 Mixins:
 ---------------------------

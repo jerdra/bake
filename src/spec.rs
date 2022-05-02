@@ -19,6 +19,7 @@ pub struct DoughSpec {
     pub flour: FlourMap,
     pub hydration: f32,
     pub salt: f32,
+    pub yeast: Option<f32>,
     pub description: Option<String>,
     pub starter: Option<f32>,
     pub mixins: Option<HashMap<String, f32>>,
@@ -31,6 +32,7 @@ pub struct RawDoughSpec {
     pub flour: FlourMap,
     pub hydration: f32,
     pub salt: f32,
+    pub yeast: Option<f32>,
     pub description: Option<String>,
     pub starter: Option<f32>,
     pub mixins: Option<HashMap<String, f32>>,
@@ -44,11 +46,13 @@ impl TryFrom<RawDoughSpec> for DoughSpec {
         let hydration = value.hydration / 100.0;
         let salt = value.salt / 100.0;
         let starter = value.starter.map(|starter| starter / 100.0);
+        let yeast = value.yeast.map(|yeast| yeast / 100.0);
 
         Ok(DoughSpec {
             name: value.name,
             flour: FlourMap(flour),
             hydration,
+            yeast,
             salt,
             description: value.description,
             starter,
