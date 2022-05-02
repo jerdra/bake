@@ -14,7 +14,18 @@ Simple little CLI tool for converting Bread bakers formulas into full recipes us
 
 ## Installation
 
-At the moment `bake` can be installed using `cargo install --path <PATH_TO_REPO>` after cloning the repository to your local computer. Note that you will need to install Rust build tools in order for this to work.
+At the moment `bake` can be installed using `cargo install` after cloning the repository to your local computer. Note that you will need to install Rust build tools and `cargo` in order for this to work (see [How to Install Rust](https://doc.rust-lang.org/book/ch01-01-installation.html))
+
+```
+# --depth 1 prevents downloading history
+# --branch v0.1.0 downloads a specific tag, leave it out if you want the latest state of main
+git clone --depth 1 --branch v0.1.0 https://github.com/jerdra/bake.git
+
+cd bake
+cargo install --path .
+```
+
+Note that you may need to add $HOME/.cargo/bin to your PATH variable to make this binary more accessible.
 
 ## Basic Usage
 
