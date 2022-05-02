@@ -1,7 +1,9 @@
 use std::fs::File;
 
+mod ingredients;
 mod recipe;
 mod spec;
+mod starter;
 
 use clap::Parser;
 use crate::spec::{DoughSpec, StarterSpec};
