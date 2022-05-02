@@ -4,7 +4,7 @@ Bake
 ------------
 **WARNING**: This repository is still very much in progress (missing features)
 
-- [ ] Allow yeast key to be used
+- [x] Allow yeast key to be used
 - [ ] Provide options for flour adjustment algorithms (least squares solution vs. naive re-allocation \[current\])
 - [ ] Write a test-suite
 - [ ] Panic if unexpected keys in YAMLs
