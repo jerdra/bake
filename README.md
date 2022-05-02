@@ -8,7 +8,7 @@ Bake
 - [ ] Provide options for flour adjustment algorithms (least squares solution vs. naive re-allocation \[current\])
 - [ ] Write a test-suite
 - [ ] Panic if unexpected keys in YAMLs
-- [ ] --save_to functionality 
+- [ ] --save-to functionality 
 ------------
 
 Simple little CLI tool for converting Bread bakers formulas into full recipes using Rust!
