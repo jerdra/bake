@@ -33,6 +33,24 @@ All options to `bake` can be revealed using:
 
 ```
 bake --help
+
+# Output
+bake 0.1.0
+Create Bread recipes using JSON formulas
+
+USAGE:
+    bake [OPTIONS] --formula <FORMULA> --weight <WEIGHT>
+
+OPTIONS:
+    -f, --formula <FORMULA>              YAML file containing dough formula
+    -h, --help                           Print help information
+    -o, --save-to <SAVE_TO>              Save final recipe to a file
+    -s, --starter-spec <STARTER_SPEC>    YAML file containing starter build
+    -V, --version                        Print version information
+    -w, --weight <WEIGHT>                Target dough weight
+
+
+
 ```
 
 `bake` requires the user to specify their dough formula using a `YAML` file. The YAML file is a simple text file that `bake` reads and convert into a bread recipe. Below is an example YAML file:
