@@ -1,5 +1,57 @@
-use crate::spec::FlourMap;
 use crate::ingredients::CalculatedIngredient;
+use crate::spec::FlourMap;
+use std::collections::HashMap;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn percent_flour_is_less_than_1() {
+        let mut flour_map = HashMap::new();
+        flour_map.insert("A".to_string(), 0.5);
+        flour_map.insert("B".to_string(), 0.5);
+        let flour_map = FlourMap(flour_map);
+        let starter = Starter {
+            amount: 10.0,
+            flour: flour_map,
+            hydration: 1.0,
+        };
+        assert!(starter.percent_flour() <= 1.0);
+    }
+
+    #[test]
+    fn into_calculated_yields_correct_amounts() {
+        let mut flour_map = HashMap::new();
+        flour_map.insert("A".to_string(), 0.5);
+        flour_map.insert("B".to_string(), 0.5);
+        let flour_map = FlourMap(flour_map);
+        let starter = Starter {
+            amount: 0.10,
+            flour: flour_map,
+            hydration: 1.0,
+        };
+        let calculated = starter.into_calculated(100.0);
+
+        let expected_out = vec![
+            CalculatedIngredient {
+                name: "A".to_string(),
+                weight: 2.5,
+            },
+            CalculatedIngredient {
+                name: "B".to_string(),
+                weight: 2.5,
+            },
+        ];
+        let difference = calculated
+            .flours
+            .into_iter()
+            .find(|flour| !expected_out.contains(flour));
+
+        assert!(difference.is_none());
+        assert_eq!(calculated.amount, 10.0);
+    }
+}
 
 #[derive(Debug)]
 pub struct Starter {
@@ -47,5 +99,3 @@ pub struct CalculatedStarter {
     pub water: CalculatedIngredient,
     pub flours: Vec<CalculatedIngredient>,
 }
-
-
