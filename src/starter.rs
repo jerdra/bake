@@ -1,10 +1,10 @@
 use crate::ingredients::CalculatedIngredient;
 use crate::spec::FlourMap;
-use std::collections::HashMap;
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashMap;
 
     #[test]
     fn percent_flour_is_less_than_1() {
