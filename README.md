@@ -12,6 +12,10 @@ Bake
 
 Simple little CLI tool for converting Bread bakers formulas into full recipes using Rust!
 
+## Installation
+
+At the moment `bake` can be installed using `cargo install` after cloning the repository to your local computer. Note that you will need to install Rust build tools in order for this to work.
+
 ## Basic Usage
 
 `bake` requires the user to specify their dough formula using a `YAML` file. The YAML file is a simple text file that `bake` reads and convert into a bread recipe. Below is an example YAML file:
