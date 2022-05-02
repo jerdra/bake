@@ -11,3 +11,9 @@ impl Display for CalculatedIngredient {
         write!(f, "{}: {:.2}", self.name, self.weight)
     }
 }
+
+impl PartialEq for CalculatedIngredient {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.weight == other.weight
+    }
+}
