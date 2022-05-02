@@ -2,7 +2,7 @@ Bake
 ======
 
 ------------
-**WARNING**: This repository is still very much in progress - use at your own risk!
+**WARNING**: This repository is still very much in progress and primarily a learning experiment - use at your own risk!
 
 - [x] Allow yeast key to be used
 - [ ] Provide options for flour adjustment algorithms (least squares solution vs. naive re-allocation \[current\])
