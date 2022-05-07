@@ -5,15 +5,14 @@ mod recipe;
 mod spec;
 mod starter;
 
-use clap::Parser;
-use crate::spec::{DoughSpec, StarterSpec};
 use crate::recipe::Formula;
+use crate::spec::{DoughSpec, StarterSpec};
+use clap::Parser;
 
 /// Create Bread recipes using JSON formulas
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-
     /// YAML file containing dough formula
     #[clap(short, long)]
     formula: String,
@@ -27,14 +26,11 @@ struct Args {
     weight: f32,
 
     /// Save final recipe to a file
-    #[clap(short='o', long)]
-    save_to: Option<String>
+    #[clap(short = 'o', long)]
+    save_to: Option<String>,
 }
 
-
-
 fn main() {
-
     let args = Args::parse();
 
     let formula_file = File::open(args.formula).unwrap();
@@ -45,16 +41,12 @@ fn main() {
             let starter_file = File::open(file).unwrap();
             let starter_spec: StarterSpec = serde_yaml::from_reader(starter_file).unwrap();
             Some(starter_spec)
-        },
-        None => None
+        }
+        None => None,
     };
 
     let formula = Formula::new(formula, starter_spec);
     let recipe = formula.into_recipe(args.weight);
     println!("{}", recipe);
     println!("{}", recipe.view_composition());
-
-
-
-
 }

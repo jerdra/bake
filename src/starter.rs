@@ -48,7 +48,10 @@ mod tests {
             .into_iter()
             .find(|flour| !expected_flour.contains(flour));
 
-        let expected_water = CalculatedIngredient { name: "Water".to_string(), weight: 5.0 };
+        let expected_water = CalculatedIngredient {
+            name: "Water".to_string(),
+            weight: 5.0,
+        };
 
         assert!(difference.is_none());
         assert_eq!(calculated.amount, 10.0);

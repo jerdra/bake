@@ -30,7 +30,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: --target=${{ matrix.triple.target }} --manifest-path bake/Cargo.toml
+          args: --target=${{ matrix.triple.target }}
 
       - name: Test
         uses: actions-rs/cargo@v1
