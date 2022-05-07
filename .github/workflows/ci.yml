@@ -1,0 +1,43 @@
+name: CI
+on: [push, pull_request]
+
+
+jobs:
+  # Check compilation on matrix
+  build-and-check:
+
+    strategy:
+      fail-fast: true
+      matrix:
+        triple:
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+          - { os: macOS-latest, target: x86_64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
+
+    name: ${{ matrix.triple.target }}
+    runs-on: ${{ matrix.triple.os }}
+    steps:
+
+      - uses: actions/checkout@v2
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --target=${{ matrix.triple.target }} --manifest-path bake/Cargo.toml
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --no-fail-fast
+        env:
+          RUST_BACKTRACE: full
+
+
