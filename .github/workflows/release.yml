@@ -23,6 +23,9 @@ jobs:
     steps:
 
       - uses: actions/checkout@v2
+      - name: Logging information
+        run: |
+          echo "Asset to produce: ${ASSET_NAME}"
 
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
