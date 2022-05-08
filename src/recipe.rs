@@ -1,9 +1,8 @@
-use crate::spec::{DoughSpec, FlourMap, StarterSpec};
 use crate::ingredients::CalculatedIngredient;
-use crate::starter::{Starter, CalculatedStarter};
+use crate::spec::{DoughSpec, FlourMap, StarterSpec};
+use crate::starter::{CalculatedStarter, Starter};
 use std::collections::HashMap;
 use std::fmt::Display;
-
 
 /// Full Dough recipe specification with or without a starter included
 #[derive(Debug)]
