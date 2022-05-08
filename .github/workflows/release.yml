@@ -36,7 +36,7 @@ jobs:
           cargo build --release --verbose
 
       - name: Strip release binary
-        if: contains("linux", matrix.triple.target) || contains("apple", matrix.triple.target)
+        if: contains(matrix.triple.target, 'linux') || contains(matrix.triple.target, 'apple')
         run: |
           echo "Stripping release binary for ${{ matrix.triple.target }}"
           strip target/release/bake
