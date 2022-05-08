@@ -43,7 +43,7 @@ jobs:
 
       - name: Build MacOS/Linux archive
         shell: bash
-        if: matrix.triple.os != "windows-latest"
+        if: matrix.triple.os != 'windows-latest'
         run: |
           echo "Packaging tarball for ${{ matrix.triple.os }}"
           tar czf ${ASSET_NAME}.tar.gz -C target/release bake
@@ -51,7 +51,7 @@ jobs:
 
       - name: Build Windows archive
         shell: bash
-        if: matrix.triple.os == "windows-latest"
+        if: matrix.triple.os == 'windows-latest'
         run: |
           echo "Packaging zipfile for ${{ matrix.triple.os }}"
           cp target/release/bake .
