@@ -1,0 +1,63 @@
+name: Release
+on:
+  push:
+    tags:
+      - "v[0-9]+-.[0-9]+-.[0-9]+"
+
+jobs:
+  build-artifacts:
+    strategy:
+      fail-fast: true
+      matrix:
+        triple:
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+          - { os: macOS-latest, target: x86_64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
+
+    name: Create ${{ matrix.triple.target }} binary
+    runs-on: ${{ matrix.triple.os }}
+    env:
+      ASSET_NAME: bake-${{ github.ref_name }}-${{ matrix.triple.target}}
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Build release
+        shell: bash
+        run: |
+          echo "Building ${{ matrix.triple.target}} binary"
+          cargo build --release --verbose
+
+      - name: Strip release binary
+        if: ${{ contains("linux", matrix.triple.target) || contains("apple", matrix.triple.target) }}
+        run: |
+          echo "Stripping release binary for ${{ matrix.triple.target }}"
+          strip target/release/bake
+
+      - name: Build MacOS/Linux archive
+        shell: bash
+        if: ${{ matrix.triple.os != "windows-latest" }}
+        run: |
+          echo "Packaging tarball for ${{ matrix.triple.os }}"
+          tar czf ${ASSET_NAME}.tar.gz -C target/release bake
+          echo "::set-output name=ASSET::${ASSET_NAME}.tar.gz"
+
+      - name: Build Windows archive
+        shell: bash
+        if: ${{ matrix.triple.os == "windows-latest" }}
+        run: |
+          echo "Packaging zipfile for ${{ matrix.triple.os }}"
+          cp target/release/bake .
+          7z a ${ASSET_NAME}.zip bake
+          echo "::set-output name=ASSET::${ASSET_NAME}.zip"
+
+      - name: Upload assets
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-binaries
+          path: ${{ github.env.ASSET }}*
