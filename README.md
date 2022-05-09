@@ -8,7 +8,10 @@ Bake
 - [ ] Provide options for flour adjustment algorithms (least squares solution vs. naive re-allocation \[current\])
 - [ ] Write a test-suite
 - [ ] Panic if unexpected keys in YAMLs
+- [ ] Validation on input arguments (i.e negative weights, 0.0 values)
+- [ ] More helpful error messages vs. just panicking on error
 - [ ] --save-to functionality 
+- [ ] Support alternative methods of hydration (i.e milk for brioche)
 ------------
 
 Simple little CLI tool for converting Bread bakers formulas into full recipes using Rust!
