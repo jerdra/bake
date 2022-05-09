@@ -8,12 +8,22 @@ Bake
 - [ ] Provide options for flour adjustment algorithms (least squares solution vs. naive re-allocation \[current\])
 - [ ] Write a test-suite
 - [ ] Panic if unexpected keys in YAMLs
+- [ ] Validation on input arguments (i.e negative weights, 0.0 values)
+- [ ] More helpful error messages vs. just panicking on error
 - [ ] --save-to functionality 
+- [ ] Support alternative methods of hydration (i.e milk for brioche)
 ------------
 
 Simple little CLI tool for converting Bread bakers formulas into full recipes using Rust!
 
 ## Installation
+
+Simply download the `bake` binary from one of the pre-compiled binaries listed here: https://github.com/jerdra/bake/releases/tag/v0.1.0
+
+You may modify your `PATH` variable to include the `bake` program if you'd like to use it in any directory.
+
+### Cargo Installation
+
 
 At the moment `bake` can be installed using `cargo install` after cloning the repository to your local computer. Note that you will need to install Rust build tools and `cargo` in order for this to work (see [How to Install Rust](https://doc.rust-lang.org/book/ch01-01-installation.html))
 
@@ -257,3 +267,6 @@ garlic: 2.00
 ---------------------------
 ```
 
+### Sample Recipes
+
+Sample recipes can be found in the `recipes/` directory under either the `sourdough` and `yeasted` directories.

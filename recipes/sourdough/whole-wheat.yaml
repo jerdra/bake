@@ -1,0 +1,10 @@
+name: Basic Whole Wheat
+description: This is a very basic 75% hydration sourdough bread, with 20% whole wheat
+
+flour:
+  white: 80
+  wheat: 20
+
+hydration: 75
+salt: 2
+starter: 15

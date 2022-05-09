@@ -1,0 +1,9 @@
+name: Basic Dough
+description: This is a very basic 75% hydration white bread
+
+flour:
+  white: 100
+
+hydration: 75
+salt: 2
+yeast: 1
