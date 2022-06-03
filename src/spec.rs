@@ -1,62 +1,105 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::ops::Deref;
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct FlourMap(pub HashMap<String, f32>);
-impl Deref for FlourMap {
-    type Target = HashMap<String, f32>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
+/// Mapping from String to Percentage value
+type IngredientMap = HashMap<String, BakersPercent>;
+
+/// Percentage value
+#[derive(Debug)]
+pub struct Percent(f32);
+impl TryFrom<f32> for Percent {
+    type Error = &'static str;
+    fn try_from(value: f32) -> Result<Self, Self::Error> {
+        if !(0.0..=100.0).contains(&value) {
+            Err("Value must be a percentage between 0 and 100!")
+        } else {
+            Ok(Percent(value))
+        }
     }
+}
+
+/// A ingredient in Baker's percentages
+#[derive(Debug)]
+pub struct BakersPercent {
+    name: String,
+    percent: f32,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(try_from = "RawDoughSpec")]
 pub struct DoughSpec {
     pub name: String,
-    pub flour: FlourMap,
-    pub hydration: f32,
-    pub salt: f32,
-    pub yeast: Option<f32>,
     pub description: Option<String>,
-    pub starter: Option<f32>,
-    pub mixins: Option<HashMap<String, f32>>,
+    pub flour: IngredientMap,
+    pub hydration: IngredientMap,
+    pub ingredients: Vec<BakersPercent>,
+    pub starter: Option<BakersPercent>,
 }
 
 /// Validation on dough specification
 #[derive(Deserialize)]
 pub struct RawDoughSpec {
     pub name: String,
-    pub flour: FlourMap,
-    pub hydration: f32,
-    pub salt: f32,
-    pub yeast: Option<f32>,
     pub description: Option<String>,
+    pub flour: HashMap<String, f32>,
+    pub hydration: HashMap<String, f32>,
+    pub ingredients: HashMap<String, f32>,
     pub starter: Option<f32>,
-    pub mixins: Option<HashMap<String, f32>>,
 }
 
 impl TryFrom<RawDoughSpec> for DoughSpec {
     type Error = &'static str;
     fn try_from(value: RawDoughSpec) -> Result<Self, Self::Error> {
-        let flour = make_percent(value.flour.0);
-        let mixins = value.mixins.map(make_percent);
-        let hydration = value.hydration / 100.0;
-        let salt = value.salt / 100.0;
-        let starter = value.starter.map(|starter| starter / 100.0);
-        let yeast = value.yeast.map(|yeast| yeast / 100.0);
+        let bakers_flour = value
+            .flour
+            .into_iter()
+            .map(|(name, amount)| {
+                (
+                    name,
+                    BakersPercent {
+                        name: name.replace("_", " "),
+                        percent: amount.into(),
+                    },
+                )
+            })
+            .collect();
+
+        let bakers_hydration = value
+            .hydration
+            .into_iter()
+            .map(|(name, amount)| {
+                (
+                    name,
+                    BakersPercent {
+                        name: name.replace("_", " "),
+                        percent: amount.into(),
+                    },
+                )
+            })
+            .collect();
+
+        let bakers_ingredients = value
+            .ingredients
+            .into_iter()
+            .map(|(name, amount)| BakersPercent {
+                name: name.replace("_", " "),
+                percent: amount.into(),
+            })
+            .collect();
+
+        let bakers_starter = value.starter.map(|amount| BakersPercent {
+            name: "Starter".into(),
+            percent: amount.into(),
+        });
 
         Ok(DoughSpec {
             name: value.name,
-            flour: FlourMap(flour),
-            hydration,
-            yeast,
-            salt,
             description: value.description,
-            starter,
-            mixins,
+            flour: bakers_flour,
+            hydration: bakers_hydration,
+            ingredients: bakers_ingredients,
+            starter: bakers_starter,
         })
     }
 }
@@ -64,26 +107,40 @@ impl TryFrom<RawDoughSpec> for DoughSpec {
 #[derive(Deserialize, Debug)]
 #[serde(try_from = "RawStarterSpec")]
 pub struct StarterSpec {
-    pub flour: FlourMap,
-    pub hydration: f32,
+    pub flour: IngredientMap,
+    pub hydration: Percent,
 }
 
 /// Validation on starter specification
 #[derive(Deserialize)]
 pub struct RawStarterSpec {
-    pub flour: FlourMap,
+    pub flour: HashMap<String, f32>,
     pub hydration: f32,
 }
 
 impl TryFrom<RawStarterSpec> for StarterSpec {
     type Error = &'static str;
     fn try_from(value: RawStarterSpec) -> Result<Self, Self::Error> {
-        let RawStarterSpec { flour, hydration } = value;
-        let flour = make_percent(flour.0);
-        let hydration = hydration / 100.0;
+        let bakers_flour = value
+            .flour
+            .into_iter()
+            .map(|(name, amount)| {
+                (
+                    name,
+                    BakersPercent {
+                        name: name.replace("_", " "),
+                        percent: amount.into(),
+                    },
+                )
+            })
+            .collect();
+
+        // Idk why it makes me do this...
+        let bakers_hydration = Percent::try_from(value.hydration)?;
+
         Ok(StarterSpec {
-            flour: FlourMap(flour),
-            hydration,
+            flour: bakers_flour,
+            hydration: bakers_hydration,
         })
     }
 }
